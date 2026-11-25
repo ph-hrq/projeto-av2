@@ -1,52 +1,38 @@
+// Importa as bibliotecas
 const express = require('express');
 const cors = require('cors');
 const { createClient } = require('@supabase/supabase-js');
 
+// Inicializa o servidor
 const app = express();
-app.use(cors());
-app.use(express.json());
+const PORTA = process.env.PORT || 3000;
 
-// ===== COLE SEUS DADOS DO SUPABASE AQUI =====
+// Configuração importante — CORS
+app.use(cors());
+app.use(express.json()); // Para receber dados em JSON
+
+// Conecta com o Supabase
 const supabaseUrl = 'https://mqcuotjechlvgmprtuob.supabase.co';
 const supabaseKey = 'sb_publishable_x1DGowbRR400Lqt6YdB1sQ_NM-iLL53';
-// ============================================
-
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Teste de conexão
+// ✅ Exemplo de rota de teste
 app.get('/', (req, res) => {
-  res.json({ mensagem: 'Servidor funcionando! 🚀' });
+  res.json({ mensagem: '✅ Servidor está funcionando!' });
 });
 
-// Listar todos os usuários
-app.get('/usuarios', async (req, res) => {
-  const { data, error } = await supabase
-    .from('usuarios')
-    .select('*')
-    .order('created_at', { ascending: false });
-  
-  if (error) return res.status(500).json({ erro: error.message });
-  res.json(data);
-});
-
-// Cadastrar novo usuário
-app.post('/usuarios', async (req, res) => {
-  const { nome, email } = req.body;
-  
-  if (!nome || !email) {
-    return res.status(400).json({ erro: 'Nome e email são obrigatórios!' });
+// ✅ Exemplo: Buscar dados
+app.get('/dados', async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('sua_tabela').select('*');
+    if (error) throw error;
+    res.json(data);
+  } catch (erro) {
+    res.status(500).json({ erro: erro.message });
   }
-
-  const { data, error } = await supabase
-    .from('usuarios')
-    .insert({ nome, email })
-    .select();
-  
-  if (error) return res.status(500).json({ erro: error.message });
-  res.json(data[0]);
 });
 
-const PORTA = process.env.PORT || 3000;
+// Inicia o servidor
 app.listen(PORTA, () => {
-  console.log(`✅ Servidor rodando na porta ${PORTA}`);
+  console.log(`🚀 Servidor rodando na porta ${PORTA}`);
 });
